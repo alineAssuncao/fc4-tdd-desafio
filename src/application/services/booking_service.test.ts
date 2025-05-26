@@ -192,4 +192,60 @@ describe("BookingService", () => {
       "Reserva não encontrada."
     );
   });
+
+  it("deve retornar erro ao tentar cancelar uma reserva que não existe", async () => {
+    const bookingId = "invalid-id";
+    const spyFindById = jest.spyOn(fakeBookingRepository, "findById");
+
+    await expect(bookingService.cancelBooking(bookingId)).rejects.toThrow(
+      "Reserva não encontrada."
+    );
+
+    expect(spyFindById).toHaveBeenCalledWith(bookingId);
+    expect(spyFindById).toHaveBeenCalledTimes(1);
+  });
+
+  it("deve lançar um erro ao tentar criar uma reserva com número de hóspedes inválido", async () => {
+    const mockProperty = {
+      getId: jest.fn().mockReturnValue("1"),
+      isAvailable: jest.fn().mockReturnValue(true),
+      validateGuestCount: jest.fn().mockImplementation(() => {
+        throw new Error("Número de hóspedes inválido.");
+      }),
+    } as any;
+
+    const mockUser = { getId: jest.fn().mockReturnValue("1") } as any;
+
+    mockPropertyService.findPropertyById.mockResolvedValue(mockProperty);
+    mockUserService.findUserById.mockResolvedValue(mockUser);
+
+    const bookingDTO: CreateBookingDTO = {
+      propertyId: "1",
+      guestId: "1",
+      startDate: new Date("2024-12-20"),
+      endDate: new Date("2024-12-25"),
+      guestCount: 0, 
+    };
+
+    await expect(bookingService.createBooking(bookingDTO)).rejects.toThrow(
+      "O número de hóspedes deve ser maior que zero."
+    );
+  });
+
+  it("deve lançar um erro ao tentar cancelar uma reserva já cancelada", async () => {
+    const mockBooking = {
+      getId: jest.fn().mockReturnValue("1"),
+      getStatus: jest.fn().mockReturnValue("CANCELLED"),
+      cancel: jest.fn().mockImplementation(() => {
+        throw new Error("A reserva já está cancelada.");
+      }),
+    } as any;
+
+    jest.spyOn(fakeBookingRepository, "findById").mockResolvedValue(mockBooking);
+
+    await expect(bookingService.cancelBooking(mockBooking.getId())).rejects.toThrow(
+      "A reserva já está cancelada."
+    );
+  });
+
 });
