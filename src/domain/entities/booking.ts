@@ -21,6 +21,11 @@ export class Booking {
     dateRange: DateRange,
     guestCount: number
   ) {
+
+    if (!property) {
+      throw new Error("Propriedade não pode ser nula.");
+    }
+    
     if (guestCount <= 0) {
       throw new Error("O número de hóspedes deve ser maior que zero.");
     }
