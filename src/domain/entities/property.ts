@@ -2,9 +2,7 @@ import { DateRange } from "../value_objects/date_range";
 import { Booking } from "./booking";
 
 export class Property {
-  getProperty() {
-    throw new Error("Method not implemented.");
-  }
+  
   private readonly bookings: Booking[] = [];
   constructor(
     private id: string,

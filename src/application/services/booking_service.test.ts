@@ -248,4 +248,62 @@ describe("BookingService", () => {
     );
   });
 
+  it("deve lançar um erro ao tentar criar uma reserva com datas inválidas", async () => {
+    const bookingDTO: CreateBookingDTO = {
+      propertyId: "1",
+      guestId: "1",
+      startDate: new Date("2024-12-25"),
+      endDate: new Date("2024-12-20"), 
+      guestCount: 2,
+    };
+
+    await expect(bookingService.createBooking(bookingDTO)).rejects.toThrow(
+      "Data de início não pode ser posterior à data de término."
+    );
+  });
+
+  it("deve garantir que o método cancel seja chamado apenas uma vez", async () => {
+    const mockBooking = {
+      getId: jest.fn().mockReturnValue("1"),
+      getStatus: jest.fn().mockReturnValue("CONFIRMED"),
+      cancel: jest.fn(),
+    } as any;
+
+    jest.spyOn(fakeBookingRepository, "findById").mockResolvedValue(mockBooking);
+
+    await bookingService.cancelBooking(mockBooking.getId());
+
+    expect(mockBooking.cancel).toHaveBeenCalledTimes(1);
+  });
+
+  it("deve lançar um erro ao tentar criar uma reserva para uma data passada", async () => {
+    const bookingDTO: CreateBookingDTO = {
+      propertyId: "1",
+      guestId: "1",
+      startDate: new Date("2021-01-01"), 
+      endDate: new Date("2021-01-05"),
+      guestCount: 2,
+    };
+
+    await expect(bookingService.createBooking(bookingDTO)).rejects.toThrow(
+      "A data de início não pode estar no passado."
+    );
+  }); 
+
+  it("deve garantir que a reserva cancelada seja salva no repositório", async () => {
+    const mockBooking = {
+      getId: jest.fn().mockReturnValue("1"),
+      cancel: jest.fn(),
+    } as any;
+
+    jest.spyOn(fakeBookingRepository, "findById").mockResolvedValue(mockBooking);
+    jest.spyOn(fakeBookingRepository, "save");
+
+    await bookingService.cancelBooking(mockBooking.getId());
+
+    expect(mockBooking.cancel).toHaveBeenCalled();
+    expect(fakeBookingRepository.save).toHaveBeenCalledWith(mockBooking);
+  });
+
+
 });

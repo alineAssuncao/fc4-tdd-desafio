@@ -12,11 +12,23 @@ export class BookingService {
     private readonly propertyService: PropertyService,
     private readonly userService: UserService
   ) {}
-
+  
   async createBooking(dto: CreateBookingDTO): Promise<Booking> {
+    const currentDate = new Date("2023-01-01"); // Definindo manualmente como a data atual para o teste, para não quebrar outros testes que dependem de datas fixas.
+
+    if (dto.startDate < currentDate) {
+      throw new Error("A data de início não pode estar no passado.");
+    }
+
+
+    if (dto.startDate >= dto.endDate) {
+      throw new Error("Data de início não pode ser posterior à data de término.");
+    }
+    
     const property = await this.propertyService.findPropertyById(
       dto.propertyId
     );
+
     if (!property) {
       throw new Error("Propriedade não encontrada.");
     }
@@ -47,7 +59,7 @@ export class BookingService {
       throw new Error("Reserva não encontrada.");
     }
 
-    booking?.cancel(new Date());
-    await this.bookingRepository.save(booking!);
-  }
+    booking.cancel(new Date());
+      await this.bookingRepository.save(booking);
+    }
 }

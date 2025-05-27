@@ -5,8 +5,13 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   async createUser(req: Request, res: Response): Promise<Response> {
+    
     try {
       const { name } = req.body;
+      if (!name || typeof name !== "string" || name.trim().length < 2) {
+        return res.status(400).json({ error: "O campo nome é obrigatório e deve ser uma string válida." });
+      }
+
       const user = await this.userService.createUser(name);
       return res.status(201).json(user);
     } catch (error: any) {
@@ -25,7 +30,7 @@ export class UserController {
 
       return res.status(200).json(user);
     } catch (error: any) {
-      return res.status(500).json({ error: "Erro interno do servidor." });
+      return res.status(500).json({ error: error.message || "Erro interno do servidor." });
     }
   }
 }

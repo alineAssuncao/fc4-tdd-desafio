@@ -20,6 +20,18 @@ export class BookingController {
           .json({ message: "Data de início ou fim inválida." });
       }
 
+      if (!Number.isInteger(req.body.guestCount) || req.body.guestCount <= 0) {
+        return res.status(400).json({ message: "Número de hóspedes inválido." });
+      }
+
+      if (!req.body.propertyId || typeof req.body.propertyId !== "string") {
+        return res.status(400).json({ message: "PropertyId inválido." });
+      }
+
+      if (!req.body.guestId || typeof req.body.guestId !== "string") {
+        return res.status(400).json({ message: "GuestId inválido." });
+      }
+
       const dto: CreateBookingDTO = {
         propertyId: req.body.propertyId,
         guestId: req.body.userId,
@@ -46,7 +58,7 @@ export class BookingController {
     } catch (error: any) {
       return res
         .status(400)
-        .json({ message: error.message || "An unexpected error occurred" });
+        .json({ message: error.message || "Falha interna no serviço" });
     }
   }
 

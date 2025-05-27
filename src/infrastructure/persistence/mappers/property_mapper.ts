@@ -4,7 +4,6 @@ import { PropertyEntity } from "../entities/property_entity";
 export class PropertyMapper {
   static toDomain(entity: PropertyEntity): Property {
     
-    if (!entity) throw new Error("A entidade PropertyEntity não pode ser nula.");
     if (!entity.id) throw new Error("O ID da propriedade é obrigatório.");
     if (!entity.name) throw new Error("O nome da propriedade é obrigatório.");
     if (!entity.maxGuests) throw new Error("O número máximo de hóspedes é obrigatório.");

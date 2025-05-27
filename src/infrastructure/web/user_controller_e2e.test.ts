@@ -54,7 +54,22 @@ describe("UserController", () => {
     const response = await request(app).post("/users").send({ name: "" });
 
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe("O campo nome é obrigatório.");
+    expect(response.body.error).toBe("O campo nome é obrigatório e deve ser uma string válida.");
   });
+
+  it("deve retornar erro 400 ao tentar criar usuário sem nome", async () => {
+    const response = await request(app).post("/users").send({});
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("O campo nome é obrigatório e deve ser uma string válida.");
+  });
+
+  it("deve retornar erro 400 ao tentar criar usuário com nome não-string", async () => {
+    const response = await request(app).post("/users").send({ name: 123 });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("O campo nome é obrigatório e deve ser uma string válida.");
+  });
+
 });
 

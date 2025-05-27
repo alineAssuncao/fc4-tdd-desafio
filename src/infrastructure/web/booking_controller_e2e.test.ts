@@ -133,21 +133,6 @@ describe("BookingController", () => {
     expect(response.body.message).toBe("Data de início ou fim inválida.");
   });
 
-  it("deve retornar 400 ao tentar criar um reserva com número de hóspedes inválido", async () => {
-    const response = await request(app).post("/bookings").send({
-      propertyId: "1",
-      guestId: "1",
-      startDate: "2024-12-20",
-      endDate: "2024-12-25",
-      guestCount: 0,
-    });
-
-    expect(response.status).toBe(400);
-    expect(response.body.message).toBe(
-      "O número de hóspedes deve ser maior que zero."
-    );
-  });
-
   it("deve retornar 400 ao tentar criar uma reserva com propertyId inválido", async () => {
     const response = await request(app).post("/bookings").send({
       propertyId: "invalid-id",
@@ -186,4 +171,66 @@ describe("BookingController", () => {
     expect(cancelResponse.status).toBe(400);
     expect(cancelResponse.body.message).toBe("Reserva não encontrada.");
   });
+
+  it("deve retornar 400 ao tentar criar uma reserva com número de hóspedes negativo", async () => {
+    const response = await request(app).post("/bookings").send({
+      propertyId: "1",
+      guestId: "1",
+      startDate: "2024-12-20",
+      endDate: "2024-12-25",
+      guestCount: -2,
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe("Número de hóspedes inválido.");
+  });
+
+  it("deve retornar 400 ao tentar criar uma reserva com propertyId ausente", async () => {
+    const response = await request(app).post("/bookings").send({
+      guestId: "1",
+      startDate: "2024-12-20",
+      endDate: "2024-12-25",
+      guestCount: 2,
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe("PropertyId inválido.");
+  });
+
+  it("deve retornar 400 ao tentar criar uma reserva com guestId ausente", async () => {
+    const response = await request(app).post("/bookings").send({
+      propertyId: "1",
+      startDate: "2024-12-20",
+      endDate: "2024-12-25",
+      guestCount: 2,
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe("GuestId inválido.");
+  });
+
+  it("deve retornar 400 ao tentar cancelar uma reserva sem um ID válido", async () => {
+    const response = await request(app).post(`/bookings/""/cancel`); // ID vazio
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe("Reserva não encontrada.");
+  });
+
+  it("deve retornar 400 e uma mensagem de erro genérica ao ocorrer um erro inesperado", async () => {
+    jest.spyOn(bookingService, "createBooking").mockRejectedValue(
+      new Error("Falha interna no serviço")
+    );
+
+    const response = await request(app).post("/bookings").send({
+      propertyId: "1",
+      guestId: "1",
+      startDate: "2024-12-20",
+      endDate: "2024-12-25",
+      guestCount: 2,
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe("Falha interna no serviço");
+  });
+
 });
